@@ -1,0 +1,198 @@
+@startuml
+
+skinparam class {
+  backgroundColor<<mongo>> lightGreen
+  backgroundColor<<sql>> lightBlue
+  backgroundColor<<redis>> lightPink
+}
+
+entity "gCustomers" as gCustomers <<mongo>> {
+  _id: string
+  CustomerID: int
+  ---
+  Address: string
+  City: string
+  CompanyName: string
+  ContactName: string
+  ContactTitle: string
+  Country: string
+  Fax: string
+  Phone: string
+  PostalCode: string
+  Region: string
+  ---
+  orders: Order
+}
+
+entity "gOrder_" as gOrder_ <<mongo>> {
+  OrderID: number
+  ---
+  Freight: number
+  OrderDate: date
+  RequiredDate: date
+  ShipAddress: string
+  ShipCity: string
+  ShipName: string
+  ShippedDate: date
+  ShipPostalCode: string
+  ShipRegion: string
+}
+
+
+entity "gSuppliers" as gSuppliers <<mongo>> {
+  _id: string
+  SupplierID: number
+  ---
+  Address: string
+  City: string
+  CompanyName: string
+  ContactName: string
+  ContactTitle: string
+  Country: string
+  Fax: string
+  HomePage: string
+  Phone: string
+  PostalCode: string
+  Region: string
+}
+
+entity "rOrders" as rOrders <<redis>> {
+  HASH ORDER
+  ---
+  OrderDate: string
+  RequiredDate: string
+  ShippedDate: string
+  Freight: number
+  ShipName: string
+  ShipAddress: string
+  ShipCity: string
+  ShipRegion: string
+  ShipPostalCode: string
+  ShipCountry: string
+  ShipVia: number
+  ---
+  CustomerRef: string
+  EmployeeRef: number
+}
+
+entity "rShippers" as rShippers <<redis>> {
+  Key: Key
+  ---
+  COMPANYNAME: string
+  PHONE: string
+}
+
+entity "sOrders" as sOrders <<sql>> {
+  OrderID: int
+  ---
+  OrderDate: datetime
+  RequiredDate: datetime
+  ShippedDate: datetime
+  ShipVia: int
+  Freight: float
+  ShipName: string
+  ShipAddress: string
+  ShipCity: string
+  Shipregion: string
+  ShipPostalCode: string
+  ShipCountry: string
+  ---
+  CustomerRef: string
+  EmployeeRef: int
+}
+
+entity "sOrder_Details" as sOrder_Details <<sql>> {
+  OrderRef: int
+  ---
+  UnitPrice: float
+  Quantity: float
+  Discount: float
+  ---
+  ProductRef: int
+}
+
+entity "sProducts" as sProducts <<sql>> {
+  ProductID: int
+  ---
+  ProductName: string
+  QuantityPerUnit: string
+  UnitPrice: float
+  UnitsInStock: int
+  UnitsOnOrder: int
+  ReorderLevel: int
+  Discontinued: bool
+  ---
+  SupplierRef: int
+  CategoryRef: int
+}
+
+entity "sRegion" as sRegion <<sql>> {
+  RegionID: int
+  ---
+  RegionDescription: string
+}
+
+entity "sCategories" as sCategories <<sql>> {
+  CategoryID: int
+  ---
+  CategoryName: string
+  Description: string
+  Picture: blob
+}
+
+entity "sTerritories" as sTerritories <<sql>> {
+  TerritoryID: string
+  ---
+  TerritoryDescription: string
+  ---
+  RegionRef: int
+}
+
+entity "sEmployees" as sEmployees <<sql>> {
+  EmployeeID: int
+  ---
+  LastName: string
+  FirstName: string
+  Title: string
+  TitleOfCourtesy: string
+  BirthDate: datetime
+  HireDate: datetime
+  Address: string
+  City: string
+  Region: string
+  PostalCode: string
+  Country: string
+  HomePhone: string
+  Extension: string
+  Photo: blob
+  Notes: string
+  PhotoPath: string
+  Salary: float
+  ---
+  ReportsTo: int
+}
+
+entity "sEmployeesTerritories" as sEmployeesTerritories <<sql>> {
+  EmployeeRef: int
+  TerritoryRef: int
+}
+
+gCustomers }o-r-|| gOrder_ : contains_
+
+sEmployeesTerritories ||-d-o| sTerritories : where
+sEmployeesTerritories ||-o| sEmployees : where
+sTerritories }o--|| sRegion : where
+sOrder_Details |o--|| sProducts : details
+sOrder_Details }o--|| sOrders : contains
+sOrders }o--|| sEmployees : by
+sOrders |o-l-|| gCustomers : for
+sEmployees }o--|| sEmployees : reportTo
+sProducts }o-d-|| sCategories : belongs
+sProducts ||-r-|| gSuppliers : supply
+rOrders ||-l-|| rShippers : via
+rOrders |o-u-|| gCustomers : for
+rOrders }o--o{ sEmployees : by
+' rOrders = gOrder_
+' rOrders = sOrders
+
+@enduml
