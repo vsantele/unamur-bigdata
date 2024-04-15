@@ -171,7 +171,7 @@ def get_customers_for_margaret():
         valid_orders = []
         for order_id in redis_client.keys("ORDER:*"):
             order_info = redis_client.hgetall(order_id)
-            if int(order_info[b"EmployeeRef"].decode("utf-8")) is employee_id[0]:
+            if int(order_info[b"EmployeeRef"].decode("utf-8")) == employee_id[0]:
                 valid_orders.append(order_info[b"CustomerRef"].decode("utf-8"))
 
     # MongoDB pour obtenir les informations des clients ayant passé ces commandes
