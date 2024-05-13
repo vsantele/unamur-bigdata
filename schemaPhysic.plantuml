@@ -6,7 +6,7 @@ skinparam class {
   backgroundColor<<redis>> lightPink
 }
 
-entity "gCustomers" as gCustomers <<mongo>> {
+entity "Customers" as gCustomers <<mongo>> {
   _id: string
   CustomerID: int
   ---
@@ -24,7 +24,7 @@ entity "gCustomers" as gCustomers <<mongo>> {
   orders: Order
 }
 
-entity "gOrder_" as gOrder_ <<mongo>> {
+entity "Order_" as gOrder_ <<mongo>> {
   OrderID: number
   ---
   Freight: number
@@ -39,7 +39,7 @@ entity "gOrder_" as gOrder_ <<mongo>> {
 }
 
 
-entity "gSuppliers" as gSuppliers <<mongo>> {
+entity "Suppliers" as gSuppliers <<mongo>> {
   _id: string
   SupplierID: number
   ---
@@ -56,7 +56,7 @@ entity "gSuppliers" as gSuppliers <<mongo>> {
   Region: string
 }
 
-entity "rOrders" as rOrders <<redis>> {
+entity "Orders" as rOrders <<redis>> {
   HASH ORDER
   ---
   OrderDate: string
@@ -75,14 +75,14 @@ entity "rOrders" as rOrders <<redis>> {
   EmployeeRef: number
 }
 
-entity "rShippers" as rShippers <<redis>> {
+entity "Shippers" as rShippers <<redis>> {
   Key: Key
   ---
   COMPANYNAME: string
   PHONE: string
 }
 
-entity "sOrder_Details" as sOrder_Details <<sql>> {
+entity "Order_Details" as sOrder_Details <<sql>> {
   OrderRef: int
   ---
   UnitPrice: float
@@ -92,7 +92,7 @@ entity "sOrder_Details" as sOrder_Details <<sql>> {
   ProductRef: int
 }
 
-entity "sProducts" as sProducts <<sql>> {
+entity "Products" as sProducts <<sql>> {
   ProductID: int
   ---
   ProductName: string
@@ -107,13 +107,13 @@ entity "sProducts" as sProducts <<sql>> {
   CategoryRef: int
 }
 
-entity "sRegion" as sRegion <<sql>> {
+entity "Region" as sRegion <<sql>> {
   RegionID: int
   ---
   RegionDescription: string
 }
 
-entity "sCategories" as sCategories <<sql>> {
+entity "Categories" as sCategories <<sql>> {
   CategoryID: int
   ---
   CategoryName: string
@@ -121,7 +121,7 @@ entity "sCategories" as sCategories <<sql>> {
   Picture: blob
 }
 
-entity "sTerritories" as sTerritories <<sql>> {
+entity "Territories" as sTerritories <<sql>> {
   TerritoryID: string
   ---
   TerritoryDescription: string
@@ -129,7 +129,7 @@ entity "sTerritories" as sTerritories <<sql>> {
   RegionRef: int
 }
 
-entity "sEmployees" as sEmployees <<sql>> {
+entity "Employees" as sEmployees <<sql>> {
   EmployeeID: int
   ---
   LastName: string
@@ -153,15 +153,15 @@ entity "sEmployees" as sEmployees <<sql>> {
   ReportsTo: int
 }
 
-entity "sEmployeesTerritories" as sEmployeesTerritories <<sql>> {
+entity "EmployeesTerritories" as sEmployeesTerritories <<sql>> {
   EmployeeRef: int
   TerritoryRef: int
 }
 
 gCustomers }o-r-|| gOrder_ : contains_
 
-sEmployeesTerritories ||-d-o| sTerritories : where
-sEmployeesTerritories ||-o| sEmployees : where
+sEmployeesTerritories }|-d-o| sTerritories : where
+sEmployeesTerritories }|-o| sEmployees : where
 sTerritories }o--|| sRegion : where
 sOrder_Details |o--|| sProducts : details
 sOrder_Details }o--|| rOrders : details
