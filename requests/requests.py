@@ -165,12 +165,12 @@ def get_customers_for_margaret():
     cursor.execute(query)
     employee_ids = cursor.fetchall()
     cursor.close()
-
     # Redis pour obtenir les ID de commande pour ces employés
-    for employee_id in employee_ids:
-        valid_orders = []
-        for order_id in redis_client.keys("ORDER:*"):
-            order_info = redis_client.hgetall(order_id)
+    valid_orders = []
+    order_keys = redis_client.keys("ORDER:*")
+    for order_id in order_keys:
+        order_info = redis_client.hgetall(order_id)
+        for employee_id in employee_ids:
             if int(order_info[b"EmployeeRef"].decode("utf-8")) == employee_id[0]:
                 valid_orders.append(order_info[b"CustomerRef"].decode("utf-8"))
 
