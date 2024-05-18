@@ -4,9 +4,10 @@ skinparam class {
   backgroundColor<<mongo>> lightGreen
   backgroundColor<<sql>> lightBlue
   backgroundColor<<redis>> lightPink
+  backgroundColor<<neo4j>> lightYellow
 }
 
-entity "Customers" as gCustomers <<mongo>> {
+entity "Customer_" as gCustomers <<mongo>> {
   _id: string
   CustomerID: int
   ---
@@ -24,22 +25,7 @@ entity "Customers" as gCustomers <<mongo>> {
   orders: Order
 }
 
-entity "Order_" as gOrder_ <<mongo>> {
-  OrderID: number
-  ---
-  Freight: number
-  OrderDate: date
-  RequiredDate: date
-  ShipAddress: string
-  ShipCity: string
-  ShipName: string
-  ShippedDate: date
-  ShipPostalCode: string
-  ShipRegion: string
-}
-
-
-entity "Suppliers" as gSuppliers <<mongo>> {
+entity "Suppliers" as sSuppliers <<sql>> {
   _id: string
   SupplierID: number
   ---
@@ -56,8 +42,9 @@ entity "Suppliers" as gSuppliers <<mongo>> {
   Region: string
 }
 
-entity "Orders" as rOrders <<redis>> {
-  HASH ORDER
+entity "Orders" as gOrders <<mongo>> {
+  _id: string
+  OrderID: number
   ---
   OrderDate: string
   RequiredDate: string
@@ -69,20 +56,20 @@ entity "Orders" as rOrders <<redis>> {
   ShipRegion: string
   ShipPostalCode: string
   ShipCountry: string
-  ShipVia: number
+  Customer: Customer
+  Employee: Employee
   ---
-  CustomerRef: string
-  EmployeeRef: number
+  ShipVia: number
 }
 
-entity "Shippers" as rShippers <<redis>> {
+entity "Shippers" as nShippers <<neo4j>> {
   Key: Key
   ---
   COMPANYNAME: string
   PHONE: string
 }
 
-entity "Order_Details" as sOrder_Details <<sql>> {
+entity "Order_Details_" as gOrder_Details <<mongo>> {
   OrderRef: int
   ---
   UnitPrice: float
@@ -107,13 +94,7 @@ entity "Products" as sProducts <<sql>> {
   CategoryRef: int
 }
 
-entity "Region" as sRegion <<sql>> {
-  RegionID: int
-  ---
-  RegionDescription: string
-}
-
-entity "Categories" as sCategories <<sql>> {
+entity "Categories" as rCategories <<redis>> {
   CategoryID: int
   ---
   CategoryName: string
@@ -121,15 +102,20 @@ entity "Categories" as sCategories <<sql>> {
   Picture: blob
 }
 
-entity "Territories" as sTerritories <<sql>> {
+entity "Region_" as gRegion <<mongo>> {
+  RegionID: int
+  ---
+  RegionDescription: string
+}
+entity "Territory_" as gTerritory <<mongo>> {
   TerritoryID: string
+  Region: Region
   ---
   TerritoryDescription: string
-  ---
-  RegionRef: int
+
 }
 
-entity "Employees" as sEmployees <<sql>> {
+entity "Employees" as gEmployees <<mongo>> {
   EmployeeID: int
   ---
   LastName: string
@@ -149,28 +135,23 @@ entity "Employees" as sEmployees <<sql>> {
   Notes: string
   PhotoPath: string
   Salary: float
+  Territory: Territory
   ---
   ReportsTo: int
 }
 
-entity "EmployeesTerritories" as sEmployeesTerritories <<sql>> {
-  EmployeeRef: int
-  TerritoryRef: int
-}
 
-gCustomers }o-r-|| gOrder_ : contains_
-
-sEmployeesTerritories }|-d-o| sTerritories : where
-sEmployeesTerritories }|-o| sEmployees : where
-sTerritories }o--|| sRegion : where
-sOrder_Details |o--|| sProducts : details
-sOrder_Details }o--|| rOrders : details
-sEmployees }o--|| sEmployees : reportTo
-sProducts }o-d-|| sCategories : belongs
-sProducts |o-r-|| gSuppliers : supply
-rOrders }o-l-|| rShippers : via
-rOrders |o-u-|| gCustomers : for
-rOrders }o--o{ sEmployees : by
+gEmployees ||-l-|| gTerritory : contains_
+gTerritory||-u-|| gRegion  : contains_
+gOrder_Details |o--|| sProducts : details
+gOrder_Details }o--|| gOrders : details
+gEmployees }o--|| gEmployees : reportTo
+sProducts }o-d-|| rCategories : belongs
+sProducts |o-r-|| sSuppliers : supply
+gOrders }o-r-|| nShippers : via
+gOrders ||-u-|| gCustomers : for
+gOrders ||--|| gEmployees : by
+nShippers }o-l-o{ nShippers: related
 ' rOrders = gOrder_
 ' rOrders = sOrders
 
